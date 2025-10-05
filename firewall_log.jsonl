@@ -1,0 +1,1 @@
+{"timestamp": "2025-10-05 16:13:34", "pid": 1, "port": null, "rule_id": "r5", "rule_type": "process_name", "rule_value": "Chrome", "action": "allow", "result": "allowed"}

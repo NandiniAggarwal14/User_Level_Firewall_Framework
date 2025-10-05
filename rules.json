@@ -1,0 +1,32 @@
+[
+    {
+        "id": "r1",
+        "type": "process_name",
+        "value": "chrome.exe",
+        "action": "block"
+    },
+    {
+        "id": "r2",
+        "type": "port",
+        "value": 8080,
+        "action": "allow"
+    },
+    {
+        "id": "r3",
+        "type": "ip",
+        "value": "192.168.1.10",
+        "action": "terminate"
+    },
+    {
+        "id": "r4",
+        "type": "port",
+        "value": "5757",
+        "action": "allow"
+    },
+    {
+        "id": "r5",
+        "type": "process_name",
+        "value": "Chrome",
+        "action": "allow"
+    }
+]
