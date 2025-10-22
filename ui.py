@@ -9,20 +9,17 @@ from logger import FirewallLogger
 class FirewallGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("User-Level Firewall Simulation")
+        self.root.title("User-Level Firewall Demonstration")
         self.root.geometry("950x650")
 
-        # --- Initialize modules ---
         self.pm = ProcessManager()
         self.ct = ConnectionTracker()
         self.re = RuleEngine()
         self.act = ActionSimulator()
         self.logger = FirewallLogger()
 
-        # --- Setup demo ---
         self.setup_demo()
 
-        # --- Tabs ---
         self.tab_control = ttk.Notebook(root)
         self.proc_tab = ttk.Frame(self.tab_control)
         self.conn_tab = ttk.Frame(self.tab_control)
@@ -35,17 +32,14 @@ class FirewallGUI:
         self.tab_control.add(self.log_tab, text="Logs")
         self.tab_control.pack(expand=1, fill="both")
 
-        # --- Populate tabs ---
         self.create_proc_tab()
         self.create_conn_tab()
         self.create_rule_tab()
         self.create_log_tab()
 
-        # --- Add sections for dynamic addition ---
         self.create_add_process_section()
         self.create_add_rule_section()
 
-    # --- Demo setup ---
     def setup_demo(self):
         demo_processes = [("Chrome",3),("Spotify",2),("VSCode",1),("Slack",4)]
         for name, priority in demo_processes:
@@ -53,7 +47,6 @@ class FirewallGUI:
         self.ct.generate_connections(self.pm.process_list)
         self.re.load_rules()
 
-    # --- Processes Tab ---
     def create_proc_tab(self):
         self.proc_tree = ttk.Treeview(self.proc_tab, columns=("PID","Name","Priority","State"), show="headings")
         for col in ("PID","Name","Priority","State"):
@@ -70,7 +63,6 @@ class FirewallGUI:
         for p in self.pm.process_list:
             self.proc_tree.insert("", "end", values=(p.pid, p.name, p.priority, p.state))
 
-    # --- Add Process Section ---
     def create_add_process_section(self):
         frame = tk.Frame(self.proc_tab)
         frame.pack(pady=5)
@@ -99,7 +91,6 @@ class FirewallGUI:
         else:
             messagebox.showerror("Error", "Process name cannot be empty")
 
-    # --- Connections Tab ---
     def create_conn_tab(self):
         self.conn_tree = ttk.Treeview(self.conn_tab, columns=("PID","Local Port","Remote Address","Status"), show="headings")
         for col in ("PID","Local Port","Remote Address","Status"):
@@ -117,7 +108,6 @@ class FirewallGUI:
             remote = f"{getattr(c,'remote_ip','')}:{getattr(c,'remote_port','')}"
             self.conn_tree.insert("", "end", values=(c.pid, getattr(c,"local_port",None), remote, getattr(c,"status","")))
 
-    # --- Rules Tab ---
     def create_rule_tab(self):
         self.rule_tree = ttk.Treeview(self.rule_tab, columns=("ID","Type","Value","Action"), show="headings")
         for col in ("ID","Type","Value","Action"):
@@ -134,7 +124,6 @@ class FirewallGUI:
         for r in self.re.rules:
             self.rule_tree.insert("", "end", values=(r["id"], r["type"], r["value"], r["action"]))
 
-    # --- Add Rule Section ---
     def create_add_rule_section(self):
         frame = tk.Frame(self.rule_tab)
         frame.pack(pady=5)
@@ -171,7 +160,6 @@ class FirewallGUI:
         self.rule_value_entry.delete(0, tk.END)
         self.rule_action_entry.delete(0, tk.END)
 
-    # --- Logs Tab ---
     def create_log_tab(self):
         self.log_tree = ttk.Treeview(self.log_tab, columns=("Timestamp","PID","Rule","Action","Result"), show="headings")
         for col in ("Timestamp","PID","Rule","Action","Result"):
@@ -194,7 +182,6 @@ class FirewallGUI:
         for rec in records:
             self.log_tree.insert("", "end", values=(rec["timestamp"], rec["pid"], rec["rule_id"], rec["action"], rec["result"]))
 
-    # --- Apply all rules simulation ---
     def apply_rules_to_all(self):
         # Processes
         for proc in self.pm.process_list:
@@ -219,7 +206,7 @@ class FirewallGUI:
         self.refresh_log_tab()
         messagebox.showinfo("Simulation", "Rules applied and logs updated!")
 
-# --- Run GUI ---
+
 if __name__ == "__main__":
     root = tk.Tk()
     app = FirewallGUI(root)

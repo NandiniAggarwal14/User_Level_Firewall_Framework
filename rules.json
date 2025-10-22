@@ -28,5 +28,29 @@
         "type": "process_name",
         "value": "Chrome",
         "action": "allow"
+    },
+    {
+        "id": "r6",
+        "type": "process_name",
+        "value": "Spotify",
+        "action": "block"
+    },
+    {
+        "id": "r7",
+        "type": "process_name",
+        "value": "Slack",
+        "action": "terminate"
+    },
+    {
+        "id": "r8",
+        "type": "local port",
+        "value": "6938",
+        "action": "allow"
+    },
+    {
+        "id": "r9",
+        "type": "process_name",
+        "value": "Spotify",
+        "action": "allow"
     }
 ]

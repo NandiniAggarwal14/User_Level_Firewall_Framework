@@ -6,7 +6,7 @@ from action_simulator import ActionSimulator
 from logger import FirewallLogger
 
 def main():
-    print("\n=== USER-LEVEL FIREWALL SIMULATION ===")
+    print("\n=== USER-LEVEL FIREWALL DEMONSTRATION===")
 
     # --- Step 1: Initialize managers ---
     pm = ProcessManager()
@@ -63,7 +63,7 @@ def main():
     # --- Step 9: Show recent logger records ---
     logger.show_recent_logs()
 
-    print("\n=== SIMULATION COMPLETE ===\n")
+    print("\n=== DEMONSTARTION COMPLETE ===\n")
 
 
 if __name__ == "__main__":

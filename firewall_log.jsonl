@@ -1,1 +1,19 @@
 {"timestamp": "2025-10-05 16:13:34", "pid": 1, "port": null, "rule_id": "r5", "rule_type": "process_name", "rule_value": "Chrome", "action": "allow", "result": "allowed"}
+{"timestamp": "2025-10-05 16:50:57", "pid": 1, "port": null, "rule_id": "r5", "rule_type": "process_name", "rule_value": "Chrome", "action": "allow", "result": "allowed"}
+{"timestamp": "2025-10-05 16:50:57", "pid": 2, "port": null, "rule_id": "r6", "rule_type": "process_name", "rule_value": "Spotify", "action": "block", "result": "blocked"}
+{"timestamp": "2025-10-05 17:06:35", "pid": 1, "port": null, "rule_id": "r5", "rule_type": "process_name", "rule_value": "Chrome", "action": "allow", "result": "allowed"}
+{"timestamp": "2025-10-05 17:06:35", "pid": 2, "port": null, "rule_id": "r6", "rule_type": "process_name", "rule_value": "Spotify", "action": "block", "result": "blocked"}
+{"timestamp": "2025-10-05 17:06:35", "pid": 4, "port": null, "rule_id": "r7", "rule_type": "process_name", "rule_value": "Slack", "action": "terminate", "result": "terminated (simulated)"}
+{"timestamp": "2025-10-06 08:06:23", "pid": 1, "port": null, "rule_id": "r5", "rule_type": "process_name", "rule_value": "Chrome", "action": "allow", "result": "allowed"}
+{"timestamp": "2025-10-06 08:06:23", "pid": 2, "port": null, "rule_id": "r6", "rule_type": "process_name", "rule_value": "Spotify", "action": "block", "result": "blocked"}
+{"timestamp": "2025-10-06 08:06:23", "pid": 4, "port": null, "rule_id": "r7", "rule_type": "process_name", "rule_value": "Slack", "action": "terminate", "result": "terminated (simulated)"}
+{"timestamp": "2025-10-16 08:34:30", "pid": 1, "port": null, "rule_id": "r5", "rule_type": "process_name", "rule_value": "Chrome", "action": "allow", "result": "allowed"}
+{"timestamp": "2025-10-16 08:34:30", "pid": 2, "port": null, "rule_id": "r6", "rule_type": "process_name", "rule_value": "Spotify", "action": "block", "result": "blocked"}
+{"timestamp": "2025-10-16 08:34:30", "pid": 4, "port": null, "rule_id": "r7", "rule_type": "process_name", "rule_value": "Slack", "action": "terminate", "result": "terminated (simulated)"}
+{"timestamp": "2025-10-16 09:42:30", "pid": 1, "port": null, "rule_id": "r5", "rule_type": "process_name", "rule_value": "Chrome", "action": "allow", "result": "allowed"}
+{"timestamp": "2025-10-16 09:42:30", "pid": 2, "port": null, "rule_id": "r6", "rule_type": "process_name", "rule_value": "Spotify", "action": "block", "result": "blocked"}
+{"timestamp": "2025-10-16 09:42:30", "pid": 4, "port": null, "rule_id": "r7", "rule_type": "process_name", "rule_value": "Slack", "action": "terminate", "result": "terminated (simulated)"}
+{"timestamp": "2025-10-16 11:34:22", "pid": 1, "port": null, "rule_id": "r5", "rule_type": "process_name", "rule_value": "Chrome", "action": "allow", "result": "allowed"}
+{"timestamp": "2025-10-16 11:34:22", "pid": 2, "port": null, "rule_id": "r6", "rule_type": "process_name", "rule_value": "Spotify", "action": "block", "result": "blocked"}
+{"timestamp": "2025-10-16 11:34:22", "pid": 2, "port": null, "rule_id": "r9", "rule_type": "process_name", "rule_value": "Spotify", "action": "allow", "result": "allowed"}
+{"timestamp": "2025-10-16 11:34:22", "pid": 4, "port": null, "rule_id": "r7", "rule_type": "process_name", "rule_value": "Slack", "action": "terminate", "result": "terminated (simulated)"}
