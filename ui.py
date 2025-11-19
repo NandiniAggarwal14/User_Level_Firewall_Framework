@@ -36,6 +36,14 @@ class FirewallGUI:
         self.memory_data = deque(maxlen=60)
         self.time_labels = deque(maxlen=60)
         
+        # Firewall-specific performance metrics
+        self.rule_match_count = 0
+        self.rule_processing_times = deque(maxlen=100)  # Last 100 rule evaluations
+        self.rules_per_second = 0
+        self.rule_match_stats = {}  # Track matches per rule ID
+        self.last_rule_check_time = time.time()
+        self.rules_checked_since_last = 0
+        
         # Monitoring flags
         self.monitoring_active = False
         
@@ -280,13 +288,38 @@ class FirewallGUI:
         
         self.firewall_cpu_label = tk.Label(stats_inner, text="Firewall CPU: 0.0%", font=('Arial', 10))
         self.firewall_cpu_label.grid(row=2, column=1, padx=20, pady=5, sticky='w')
+        
+        # Firewall-specific metrics
+        fw_metrics_frame = tk.LabelFrame(self.perf_tab, text="Firewall Performance Metrics", font=('Arial', 10, 'bold'))
+        fw_metrics_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=10)
+        
+        fw_inner = tk.Frame(fw_metrics_frame)
+        fw_inner.pack(padx=10, pady=10)
+        
+        self.rules_matched_label = tk.Label(fw_inner, text="Total Rules Matched: 0", font=('Arial', 10))
+        self.rules_matched_label.grid(row=0, column=0, padx=20, pady=5, sticky='w')
+        
+        self.rules_per_sec_label = tk.Label(fw_inner, text="Rules/Second: 0.0", font=('Arial', 10))
+        self.rules_per_sec_label.grid(row=0, column=1, padx=20, pady=5, sticky='w')
+        
+        self.avg_rule_time_label = tk.Label(fw_inner, text="Avg Rule Time: 0.00 ms", font=('Arial', 10))
+        self.avg_rule_time_label.grid(row=1, column=0, padx=20, pady=5, sticky='w')
+        
+        self.most_active_rule_label = tk.Label(fw_inner, text="Most Active Rule: None", font=('Arial', 10))
+        self.most_active_rule_label.grid(row=1, column=1, padx=20, pady=5, sticky='w')
     
     def start_monitoring(self):
         """Start the monitoring thread after UI is initialized"""
         self.monitoring_active = True
         self.monitor_thread = threading.Thread(target=self.monitor_system, daemon=True)
         self.monitor_thread.start()
+        
+        # Start continuous rule evaluation thread
+        self.rule_eval_thread = threading.Thread(target=self.continuous_rule_evaluation, daemon=True)
+        self.rule_eval_thread.start()
+        
         print("✅ Performance monitoring started!")
+        print("✅ Continuous rule evaluation started!")
     
     def monitor_system(self):
         """Background thread to collect system metrics"""
@@ -294,8 +327,13 @@ class FirewallGUI:
         
         try:
             firewall_proc = psutil.Process()  # Current process (firewall)
+            # Initialize CPU measurement
+            firewall_proc.cpu_percent(interval=None)
         except:
             firewall_proc = None
+        
+        # Wait a bit for first CPU measurement
+        time.sleep(0.1)
         
         while self.monitoring_active:
             try:
@@ -321,10 +359,13 @@ class FirewallGUI:
                 except:
                     conn_count = 0
                 
-                # Get firewall's own CPU usage
+                # Get firewall's own CPU usage (cached value after interval)
                 if firewall_proc:
                     try:
-                        firewall_cpu = firewall_proc.cpu_percent(interval=0.1)
+                        firewall_cpu = firewall_proc.cpu_percent(interval=None)
+                        # If still 0, force a measurement
+                        if firewall_cpu == 0.0:
+                            firewall_cpu = firewall_proc.cpu_percent(interval=0.5)
                     except:
                         firewall_cpu = 0.0
                 else:
@@ -350,6 +391,68 @@ class FirewallGUI:
                 print(f"Monitoring error: {e}")
                 time.sleep(1)
     
+    def continuous_rule_evaluation(self):
+        """Continuously evaluate rules against active processes/connections (simulates real firewall)"""
+        while self.monitoring_active:
+            try:
+                eval_start = time.time()
+                rules_checked = 0
+                
+                # Sample a subset of processes (10 random ones) for performance
+                import random
+                proc_list = list(psutil.process_iter(['pid', 'name', 'username']))
+                sample_size = min(10, len(proc_list))
+                
+                for proc in random.sample(proc_list, sample_size):
+                    try:
+                        rule_start = time.time()
+                        matched_rules = self.re.match_process(proc)
+                        rule_end = time.time()
+                        
+                        self.rule_processing_times.append(rule_end - rule_start)
+                        rules_checked += 1
+                        
+                        for rule in matched_rules:
+                            rule_id = rule.get('id', 'unknown')
+                            self.rule_match_stats[rule_id] = self.rule_match_stats.get(rule_id, 0) + 1
+                            self.rule_match_count += 1
+                    except:
+                        pass
+                
+                # Sample connections (5 random ones)
+                try:
+                    self.ct.fetch_connections()
+                    conn_sample_size = min(5, len(self.ct.connections))
+                    
+                    for conn in random.sample(self.ct.connections, conn_sample_size):
+                        rule_start = time.time()
+                        matched_rules = self.re.match_connection(conn)
+                        rule_end = time.time()
+                        
+                        self.rule_processing_times.append(rule_end - rule_start)
+                        rules_checked += 1
+                        
+                        for rule in matched_rules:
+                            rule_id = rule.get('id', 'unknown')
+                            self.rule_match_stats[rule_id] = self.rule_match_stats.get(rule_id, 0) + 1
+                            self.rule_match_count += 1
+                except:
+                    pass
+                
+                # Calculate rules per second
+                eval_time = time.time() - eval_start
+                if eval_time > 0:
+                    self.rules_per_second = rules_checked / eval_time
+                
+                self.rules_checked_since_last += rules_checked
+                
+                # Sleep for a bit before next evaluation cycle
+                time.sleep(2)  # Evaluate every 2 seconds
+                
+            except Exception as e:
+                print(f"Rule evaluation error: {e}")
+                time.sleep(2)
+    
     def update_perf_display(self, cpu, mem, proc_count, conn_count, uptime, fw_cpu):
         """Update performance graphs and statistics (called from main thread)"""
         # Update statistics labels
@@ -359,6 +462,24 @@ class FirewallGUI:
         self.conn_count_label.config(text=f"Active Connections: {conn_count}")
         self.uptime_label.config(text=f"Monitoring Time: {uptime}")
         self.firewall_cpu_label.config(text=f"Firewall CPU: {fw_cpu:.1f}%")
+        
+        # Update firewall-specific metrics
+        self.rules_matched_label.config(text=f"Total Rules Matched: {self.rule_match_count}")
+        self.rules_per_sec_label.config(text=f"Rules/Second: {self.rules_per_second:.1f}")
+        
+        # Calculate average rule processing time
+        if self.rule_processing_times:
+            avg_time_ms = (sum(self.rule_processing_times) / len(self.rule_processing_times)) * 1000
+            self.avg_rule_time_label.config(text=f"Avg Rule Time: {avg_time_ms:.2f} ms")
+        else:
+            self.avg_rule_time_label.config(text=f"Avg Rule Time: 0.00 ms")
+        
+        # Find most active rule
+        if self.rule_match_stats:
+            most_active = max(self.rule_match_stats.items(), key=lambda x: x[1])
+            self.most_active_rule_label.config(text=f"Most Active Rule: {most_active[0]} ({most_active[1]} matches)")
+        else:
+            self.most_active_rule_label.config(text=f"Most Active Rule: None")
         
         # Draw graphs
         self.draw_graph(self.cpu_canvas, self.cpu_data, "CPU", "#FF6B6B", max_val=100)
@@ -425,24 +546,60 @@ class FirewallGUI:
     # APPLY RULES (CORE)
     # ----------------------------
     def apply_rules_to_all(self):
+        # Track rule processing performance
+        start_time = time.time()
+        rules_processed = 0
+        
         # Apply to all live processes
         for proc in psutil.process_iter(['pid', 'name', 'username']):
+            rule_start = time.time()
             matched_rules = self.re.match_process(proc)
+            rule_end = time.time()
+            
+            # Track processing time
+            self.rule_processing_times.append(rule_end - rule_start)
+            rules_processed += len(matched_rules)
+            
             for rule in matched_rules:
                 self.act.apply_action(proc, rule)
+                
+                # Track rule match statistics
+                rule_id = rule.get('id', 'unknown')
+                self.rule_match_stats[rule_id] = self.rule_match_stats.get(rule_id, 0) + 1
+                self.rule_match_count += 1
 
         # Apply to all active connections
         self.ct.fetch_connections()
         for conn in self.ct.connections:
+            rule_start = time.time()
             matched_rules = self.re.match_connection(conn)
+            rule_end = time.time()
+            
+            # Track processing time
+            self.rule_processing_times.append(rule_end - rule_start)
+            rules_processed += len(matched_rules)
+            
             for rule in matched_rules:
                 self.act.apply_action(conn, rule)
-
+                
+                # Track rule match statistics
+                rule_id = rule.get('id', 'unknown')
+                self.rule_match_stats[rule_id] = self.rule_match_stats.get(rule_id, 0) + 1
+                self.rule_match_count += 1
+        
+        # Calculate rules per second
+        total_time = time.time() - start_time
+        if total_time > 0:
+            self.rules_per_second = rules_processed / total_time
+        
         self.refresh_proc_tab()
         self.refresh_conn_tab()
         self.refresh_rule_tab()
         self.refresh_log_tab()
-        messagebox.showinfo("Simulation Complete", "Rules applied (safe simulation). Logs updated!")
+        messagebox.showinfo("Simulation Complete", 
+                          f"Rules applied!\n\nProcessed {rules_processed} rule checks in {total_time:.3f}s\n" +
+                          f"Throughput: {self.rules_per_second:.1f} rules/second\n" +
+                          f"Total Matches: {self.rule_match_count}")
 
 
 if __name__ == "__main__":
